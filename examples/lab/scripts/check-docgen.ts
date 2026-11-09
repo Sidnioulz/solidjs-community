@@ -12,7 +12,8 @@ import {
 } from 'storybook-solidjs-vite/renderer';
 
 const root = process.cwd();
-const builtManifestPath = path.join(root, 'storybook-static/manifests/components.json');
+const builtDir = path.join(root, 'storybook-static');
+const builtManifestPath = path.join(builtDir, 'manifests/components.json');
 
 interface ManifestComponent {
     id?: string;
@@ -169,9 +170,18 @@ async function checkArgTypesScenario(scenario: Scenario) {
     ok(`${ scenario.label } → argTypes: ${ Object.keys(argTypes).join(', ') }`);
 }
 
+/**
+ * `storybook build` writes `manifests/components.json` only when `features.componentsManifest`
+ * resolves to `true` after every preset ran. The framework preset is responsible for that
+ * default, so a build without the file means the flag was lost on the way, not that docgen failed.
+ */
 function checkBuiltManifest() {
     if (!existsSync(builtManifestPath)) {
-        fail(`missing ${ path.relative(root, builtManifestPath) } — run: bun run build-storybook`);
+        if (!existsSync(builtDir)) {
+            fail(`missing ${ path.relative(root, builtDir) } — run: bun run build-storybook`);
+        }
+
+        fail(`missing ${ path.relative(root, builtManifestPath) } — features.componentsManifest did not reach Storybook core`);
     }
 
     const manifest = JSON.parse(readFileSync(builtManifestPath, 'utf8')) as {

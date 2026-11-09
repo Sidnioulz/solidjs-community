@@ -48,6 +48,12 @@ export const core: PresetProperty<'core', StorybookConfig> = {
 /**
  * Enable the components manifest debugger by default.
  *
+ * Storybook core's common preset runs before this one and seeds `features` with its own
+ * defaults, `componentsManifest: false` among them. Core merges a plain object over that
+ * existing value, so these defaults win. If this ever becomes a function, spread `existing`
+ * first for the same effect. A project's `main.ts` is applied after every framework preset
+ * and can still override any of them.
+ *
  * @see https://storybook.js.org/docs/api/main-config/main-config-features#componentsmanifest
  */
 export const features: PresetProperty<'features', StorybookConfig> = {
